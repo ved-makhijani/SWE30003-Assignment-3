@@ -26,7 +26,8 @@ namespace BookstoreApp.Data
 
         public bool SaveUser(string email, string password, string role, string name, string address = "")
         {
-            if (_users.Any(u => u.Email.ToLower() == email.ToLower())) return false;
+            if (_users.Any(u => u.Email.ToLower() == email.ToLower()))
+                return false;
             _users.Add((email.ToLower(), password, role, name, address));
             return true;
         }
@@ -37,14 +38,18 @@ namespace BookstoreApp.Data
         public (string Email, string Password, string Role, string Name, string Address)?
             GetUserByCredentials(string email, string password)
         {
-            var u = _users.FirstOrDefault(u =>
-                u.Email == email.ToLower() && u.Password == password);
-            return u.Email != null ? u : null;
+            foreach (var u in _users)
+            {
+                if (u.Email == email.ToLower() && u.Password == password)
+                    return u;
+            }
+            return null;
         }
 
         public void SaveBook(Book book)
         {
-            if (!_books.Any(b => b.ISBN == book.ISBN)) _books.Add(book);
+            if (!_books.Any(b => b.ISBN == book.ISBN))
+                _books.Add(book);
         }
 
         public List<Book> GetAllBooks() => new List<Book>(_books);
@@ -81,7 +86,8 @@ namespace BookstoreApp.Data
                 new("978-0-525-55360-5", "The Midnight Library", "Matt Haig", "Fiction", "Between life and death.", 21.99m, 9),
             };
 
-            foreach (var book in books) SaveBook(book);
+            foreach (var book in books)
+                SaveBook(book);
         }
     }
 }

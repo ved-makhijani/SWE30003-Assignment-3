@@ -1,0 +1,5 @@
+/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/publish/BookStoreApp
+/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/publish/BookStoreApp.dll
+/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/publish/BookStoreApp.runtimeconfig.json
+/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/publish/BookStoreApp.pdb
+/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/publish/BookStoreApp.deps.json

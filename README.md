@@ -9,7 +9,7 @@ Swinburne University of Technology | Semester 1, 2026 | Group Wed 16:30 6
 
 Favourite Books is an online bookstore system built for a local Hawthorn bookstore. The system allows customers to browse books, manage a shopping cart, place orders, and track order history. Administrators can manage the book catalogue and view sales reports.
 
-The system was originally implemented as a console application and converted to a **Blazor Server** web application for Assignment 3.
+The system is implemented as a **Blazor Server** web application running on .NET 10.
 
 ---
 
@@ -17,10 +17,10 @@ The system was originally implemented as a console application and converted to 
 
 | Student ID | Name | Responsibility |
 |---|---|---|
-| 104762184 | Ved Jay Makhijani | Core domain models, cart, checkout, database, unit tests |
+| 104762184 | Ved Jay Makhijani | Core domain models, cart, checkout, database, unit tests, Blazor UI conversion |
 | 105036550 | Aidan Tilley | UML diagram, catalogue UI, UI framework |
 | 103476303 | Joel Hadfield | Auth classes, account management UI |
-| 105028858 | Lakshit Bansal | Admin catalogue UI, sales report, scenarios |
+| 105028858 | Lakshit Bansal | Admin catalogue UI, sales report, scenarios, report |
 
 ---
 
@@ -57,10 +57,10 @@ SWE30003-Assignment-3/
 │   ├── Auth/
 │   │   └── User.cs                 # User, Customer, Administrator, StoreManager, WarehouseStaff
 │   ├── Services/
-│   │   └── SessionService.cs       # Scoped session state (replaces console session variables)
+│   │   └── SessionService.cs       # Scoped session state (login, cart, role)
 │   ├── Pages/                      # Blazor pages (one per business area)
 │   │   ├── Index.razor             # Home page
-│   │   ├── Catalogue.razor         # Browse, search, filter books + book detail
+│   │   ├── Catalogue.razor         # Browse, search, filter books + book detail + add to cart
 │   │   ├── Login.razor             # Login
 │   │   ├── Register.razor          # Register new account
 │   │   ├── Cart.razor              # Shopping cart + checkout + invoice
@@ -74,8 +74,11 @@ SWE30003-Assignment-3/
 │   │   └── MainLayout.razor        # Navbar and page layout
 │   ├── wwwroot/
 │   │   └── css/app.css             # Application stylesheet
+│   ├── Properties/
+│   │   └── launchSettings.json     # Sets Development environment by default
 │   ├── App.razor                   # Router
 │   ├── _Imports.razor              # Global using statements
+│   ├── BookStoreApp.csproj         # Project file (Microsoft.NET.Sdk.Web)
 │   └── Program.cs                  # Application entry point + DI setup
 │
 └── BookStoreApp.Tests/             # MSTest unit test project
@@ -102,31 +105,38 @@ dotnet --version
 
 ## How to Run
 
-**1. Clone or download the project**
-
-**2. Navigate to the project root:**
+**1. Navigate to the project root:**
 ```bash
 cd SWE30003-Assignment-3
 ```
 
-**3. Build the project:**
+**2. Publish the application:**
 ```bash
-dotnet build
+dotnet publish BookStoreApp/BookStoreApp.csproj -c Debug -o BookStoreApp/publish
 ```
 
-**4. Run the Blazor web application:**
+**3. Run from the published output:**
 ```bash
-dotnet run --project BookStoreApp/BookStoreApp.csproj
+cd BookStoreApp/publish && dotnet BookStoreApp.dll
 ```
 
-**5. Open your browser and go to:**
+**4. Open your browser and go to:**
 ```
 http://localhost:5000
 ```
 
+**To stop the server:** press `Ctrl+C`
+
+**To run again after making changes:**
+```bash
+cd /path/to/SWE30003-Assignment-3
+dotnet publish BookStoreApp/BookStoreApp.csproj -c Debug -o BookStoreApp/publish
+cd BookStoreApp/publish && dotnet BookStoreApp.dll
+```
+
 ---
 
-## How to Run Tests
+## How to Run Unit Tests
 
 From the project root:
 ```bash
@@ -142,31 +152,47 @@ Test summary: total: 82, failed: 0, succeeded: 82
 
 ## Default Credentials
 
-The database is seeded automatically on first run with sample books and a default admin account.
+The database is seeded automatically on every run with 8 sample books and a default admin account.
 
 | Role | Email | Password |
 |---|---|---|
 | Administrator | admin@favouritebooks.com | Admin1234 |
 
-You can register a new customer account from the Register page.
+Register a new customer account from the `/register` page.
+
+---
+
+## Pages and URLs
+
+| URL | Page | Access |
+|---|---|---|
+| `/` | Home | Everyone |
+| `/catalogue` | Browse books, search, filter, add to cart | Everyone |
+| `/login` | Login | Guest only |
+| `/register` | Register new account | Guest only |
+| `/cart` | Shopping cart and checkout | Customer |
+| `/orders` | Order history | Customer |
+| `/account` | Manage account details | Customer |
+| `/admin` | Manage catalogue and view all orders | Admin / StoreManager |
+| `/salesreport` | Revenue stats and export | Admin / StoreManager |
 
 ---
 
 ## Features
 
 ### Customer
-- Browse the book catalogue (search by keyword, filter by genre, author, price)
-- View detailed book information
+- Browse the full book catalogue with search (title, author, genre) and filters (genre, author, max price)
+- View detailed book information including description and stock
 - Register and log in to an account
 - Add books to shopping cart, update quantities, remove items
-- Proceed to checkout with delivery address and payment method selection
-- View order history
+- Checkout with delivery address and payment method selection (simulated)
+- View full order history
 
-### Admin / Store Manager
+### Administrator
 - All customer features
-- Manage catalogue: add books (with duplicate ISBN validation), edit book details, disable books
+- Manage catalogue: add books (duplicate ISBN validation), edit book details, disable books
 - View all orders across all customers
-- View sales report: total revenue, order count, average order value
+- View sales report: total revenue, order count, average order value, order breakdown
 - Export sales report to text file
 
 ---
@@ -178,15 +204,15 @@ The system uses two complementary architecture styles:
 **Layered (N-Tier):**
 ```
 Presentation Layer   →   Pages/*.razor, Shared/MainLayout.razor
-Application Layer    →   Program.cs, Services/SessionService.cs
+Application Layer    →   Program.cs (DI), Services/SessionService.cs
 Domain Layer         →   Models/ (Book, Catalogue, ShoppingCart, Order, Invoice, Checkout)
 Data Layer           →   Data/Database.cs
 ```
 
-**MVC within the Presentation/Application layers:**
+**MVC within Presentation/Application layers:**
 - **Model** — domain classes in `Models/` and `Data/`
 - **View** — Razor components in `Pages/` and `Shared/`
-- **Controller** — `SessionService`, `Checkout`, routing in `Program.cs`
+- **Controller** — `SessionService`, `Checkout`, ASP.NET Core routing in `Program.cs`
 
 ---
 
@@ -199,6 +225,7 @@ https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding
 
 ## Notes
 
-- Payment processing is simulated (stub) as per Assignment 3 specification — no real payment gateway is used
+- Payment processing is simulated as per Assignment 3 specification — no real payment gateway is used
 - Data is stored in-memory and resets on each application restart
-- The system was developed and tested on macOS (Apple Silicon) with .NET 10.0
+- The application must be run from the published output folder for static files to load correctly
+- Developed and tested on macOS (Apple Silicon) with .NET 10.0

@@ -1,6 +1,6 @@
 @page "/login"
-@inject Database Db
-@inject SessionService Session
+@inject BookstoreApp.Data.Database Db
+@inject BookstoreApp.Services.SessionService Session
 @inject NavigationManager Nav
 
 <PageTitle>Login — Favourite Books</PageTitle>
@@ -14,14 +14,23 @@
             <div class="msg-error">@errorMessage</div>
         }
 
+        @if (loginSuccess)
+        {
+            <div class="msg-success">Welcome back, @Session.Name! Redirecting...</div>
+        }
+
         <div class="form-group">
             <label>Email</label>
-            <input class="input" type="email" @bind="email" placeholder="you@example.com" />
+            <input class="input" type="email" @bind="email"
+                   placeholder="you@example.com"
+                   @onkeyup="HandleKey" />
         </div>
 
         <div class="form-group">
             <label>Password</label>
-            <input class="input" type="password" @bind="password" placeholder="Your password" />
+            <input class="input" type="password" @bind="password"
+                   placeholder="Your password"
+                   @onkeyup="HandleKey" />
         </div>
 
         <button class="btn btn-primary btn-full" @onclick="DoLogin">Login</button>
@@ -34,8 +43,14 @@
     private string email = "";
     private string password = "";
     private string errorMessage = "";
+    private bool loginSuccess = false;
 
-    private void DoLogin()
+    private async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await DoLogin();
+    }
+
+    private async Task DoLogin()
     {
         errorMessage = "";
 
@@ -45,10 +60,10 @@
             return;
         }
 
-        var user = Db.GetUserByCredentials(email, password);
+        var user = Db.GetUserByCredentials(email.Trim(), password.Trim());
         if (user == null)
         {
-            errorMessage = Db.EmailExists(email)
+            errorMessage = Db.EmailExists(email.Trim())
                 ? "Incorrect password. Please try again."
                 : "Email not registered. Please register first.";
             return;
@@ -56,7 +71,10 @@
 
         Session.Login(user.Value.Email, user.Value.Name, user.Value.Role, user.Value.Address);
         Session.NotifyStateChanged();
+        loginSuccess = true;
+        StateHasChanged();
 
+        await Task.Delay(300);
         Nav.NavigateTo(Session.IsAdmin ? "/admin" : "/catalogue");
     }
 }
