@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\BookStoreApp",
+    "\\BookStoreApp.Tests",
+    "\\BookStoreApp\\Data",
+    "\\BookStoreApp\\Models",
+    "\\BookStoreApp\\UI"
+  ],
+  "SelectedNode": "\\BookStoreApp\\Program.cs",
+  "PreviewInSolutionExplorer": false
+}
