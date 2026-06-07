@@ -24,9 +24,6 @@ foreach (Book book in db.GetAllBooks())
 
 Checkout checkout = new Checkout(db, catalogue);
 
-BookDetailUI bookDetailUI = new BookDetailUI();
-CatalogueUI catalogueUI = new CatalogueUI(catalogue, bookDetailUI);
-
 Console.WriteLine($"  System ready — {catalogue.Count} books loaded.\n");
 
 // ── Session state ──────────────────────────────────────────────────────────────
@@ -61,7 +58,7 @@ while (running)
         switch (choice)
         {
             case "1":
-                catalogueUI.Show();
+                BrowseCatalogue(catalogue);
                 break;
 
             case "2":
@@ -113,7 +110,7 @@ while (running)
         switch (choice)
         {
             case "1":
-                catalogueUI.Show();
+                BrowseCatalogue(catalogue);
                 break;
 
             case "2":
@@ -150,8 +147,7 @@ while (running)
         Console.WriteLine($"  ║  1. Browse catalogue                 ║");
         Console.WriteLine($"  ║  2. Manage catalogue  [Lakshit]      ║");
         Console.WriteLine($"  ║  3. View all orders                  ║");
-        Console.WriteLine($"  ║  4. Sales Report                     ║");
-        Console.WriteLine($"  ║  5. Logout                           ║");
+        Console.WriteLine($"  ║  4. Logout                           ║");
         Console.WriteLine($"  ║  0. Exit                             ║");
         Console.WriteLine($"  ╚══════════════════════════════════════╝");
         Console.Write("  Choose an option: ");
@@ -162,7 +158,7 @@ while (running)
         switch (choice)
         {
             case "1":
-               catalogueUI.Show();
+                BrowseCatalogue(catalogue);
                 break;
 
             case "2":
@@ -173,12 +169,8 @@ while (running)
             case "3":
                 ViewAllOrders(db);
                 break;
-    
-            case "4":
-                new SalesReportUI(db).Show();
-                break;
 
-            case "5":
+            case "4":
                 Console.WriteLine($"  Goodbye, {currentName}!");
                 currentEmail = currentName = currentRole = currentAddress = null;
                 break;
@@ -197,83 +189,83 @@ while (running)
 
 // ── Browse Catalogue (Aidan's module stub — basic version included here) ───────
 
-//static void BrowseCatalogue(Catalogue catalogue)
-//{
-//    bool running = true;
-//    while (running)
-//    {
-//        Console.WriteLine("\n  ╔══════════════════════════════════════╗");
-//        Console.WriteLine("  ║          BROWSE CATALOGUE            ║");
-//        Console.WriteLine("  ╠══════════════════════════════════════╣");
-//        Console.WriteLine("  ║  1. View all books                   ║");
-//        Console.WriteLine("  ║  2. Search by keyword                ║");
-//        Console.WriteLine("  ║  3. Filter by genre                  ║");
-//        Console.WriteLine("  ║  4. Filter by max price              ║");
-//        Console.WriteLine("  ║  5. View book details (by ISBN)      ║");
-//        Console.WriteLine("  ║  0. Back                             ║");
-//        Console.WriteLine("  ╚══════════════════════════════════════╝");
-//        Console.Write("  Choose an option: ");
+static void BrowseCatalogue(Catalogue catalogue)
+{
+    bool running = true;
+    while (running)
+    {
+        Console.WriteLine("\n  ╔══════════════════════════════════════╗");
+        Console.WriteLine("  ║          BROWSE CATALOGUE            ║");
+        Console.WriteLine("  ╠══════════════════════════════════════╣");
+        Console.WriteLine("  ║  1. View all books                   ║");
+        Console.WriteLine("  ║  2. Search by keyword                ║");
+        Console.WriteLine("  ║  3. Filter by genre                  ║");
+        Console.WriteLine("  ║  4. Filter by max price              ║");
+        Console.WriteLine("  ║  5. View book details (by ISBN)      ║");
+        Console.WriteLine("  ║  0. Back                             ║");
+        Console.WriteLine("  ╚══════════════════════════════════════╝");
+        Console.Write("  Choose an option: ");
 
-//        string? input = Console.ReadLine()?.Trim();
-//        Console.WriteLine();
+        string? input = Console.ReadLine()?.Trim();
+        Console.WriteLine();
 
-//        switch (input)
-//        {
-//            case "1":
-//                PrintBookList(catalogue.ListAvailableBooks());
-//                break;
+        switch (input)
+        {
+            case "1":
+                PrintBookList(catalogue.ListAvailableBooks());
+                break;
 
-//            case "2":
-//                Console.Write("  Enter keyword (title / author / genre): ");
-//                string? kw = Console.ReadLine()?.Trim();
-//                var results = catalogue.SearchBooks(kw ?? "");
-//                Console.WriteLine($"\n  {results.Count} result(s) found:");
-//                PrintBookList(results);
-//                break;
+            case "2":
+                Console.Write("  Enter keyword (title / author / genre): ");
+                string? kw = Console.ReadLine()?.Trim();
+                var results = catalogue.SearchBooks(kw ?? "");
+                Console.WriteLine($"\n  {results.Count} result(s) found:");
+                PrintBookList(results);
+                break;
 
-//            case "3":
-//                Console.Write("  Enter genre: ");
-//                string? genre = Console.ReadLine()?.Trim();
-//                var genreResults = catalogue.FilterByGenre(genre ?? "");
-//                Console.WriteLine($"\n  {genreResults.Count} result(s) found:");
-//                PrintBookList(genreResults);
-//                break;
+            case "3":
+                Console.Write("  Enter genre: ");
+                string? genre = Console.ReadLine()?.Trim();
+                var genreResults = catalogue.FilterByGenre(genre ?? "");
+                Console.WriteLine($"\n  {genreResults.Count} result(s) found:");
+                PrintBookList(genreResults);
+                break;
 
-//            case "4":
-//                Console.Write("  Enter maximum price ($): ");
-//                if (!decimal.TryParse(Console.ReadLine()?.Trim(), out decimal max))
-//                {
-//                    Console.WriteLine("  [!] Invalid price.");
-//                    break;
-//                }
-//                var priceResults = catalogue.FilterByMaxPrice(max);
-//                Console.WriteLine($"\n  {priceResults.Count} result(s) found:");
-//                PrintBookList(priceResults);
-//                break;
+            case "4":
+                Console.Write("  Enter maximum price ($): ");
+                if (!decimal.TryParse(Console.ReadLine()?.Trim(), out decimal max))
+                {
+                    Console.WriteLine("  [!] Invalid price.");
+                    break;
+                }
+                var priceResults = catalogue.FilterByMaxPrice(max);
+                Console.WriteLine($"\n  {priceResults.Count} result(s) found:");
+                PrintBookList(priceResults);
+                break;
 
-//            case "5":
-//                Console.Write("  Enter ISBN: ");
-//                string? isbn = Console.ReadLine()?.Trim();
-//                Book? book = catalogue.FindByISBN(isbn ?? "");
-//                if (book == null)
-//                    Console.WriteLine("  [!] Book not found.");
-//                else
-//                {
-//                    Console.WriteLine();
-//                    Console.WriteLine(book.ToDetailString());
-//                }
-//                break;
+            case "5":
+                Console.Write("  Enter ISBN: ");
+                string? isbn = Console.ReadLine()?.Trim();
+                Book? book = catalogue.FindByISBN(isbn ?? "");
+                if (book == null)
+                    Console.WriteLine("  [!] Book not found.");
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(book.ToDetailString());
+                }
+                break;
 
-//            case "0":
-//                running = false;
-//                break;
+            case "0":
+                running = false;
+                break;
 
-//            default:
-//                Console.WriteLine("  [!] Invalid option.");
-//                break;
-//        }
-//    }
-//}
+            default:
+                Console.WriteLine("  [!] Invalid option.");
+                break;
+        }
+    }
+}
 
 static void PrintBookList(List<Book> books)
 {

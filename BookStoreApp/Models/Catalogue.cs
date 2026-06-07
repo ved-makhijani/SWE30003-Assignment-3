@@ -95,5 +95,10 @@ namespace BookstoreApp.Models
             _books.Any(b => b.ISBN == isbn);
 
         public int Count => _books.Count;
+
+        public List<Book> FilterByAuthor(string author) =>
+            _books.Where(b => b.IsAvailable && b.Author.ToLower().Contains(author.ToLower())).ToList();
     }
+
+    
 }
