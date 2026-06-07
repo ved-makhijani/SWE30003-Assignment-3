@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BookStoreApp.Tests/BookStoreApp.Tests.csproj" />
+  <Project Path="BookStoreApp/BookStoreApp.csproj" />
+</Solution>
