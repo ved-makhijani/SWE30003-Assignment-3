@@ -1,0 +1,209 @@
+@page "/cart"
+@inject SessionService Session
+@inject BookstoreApp.Models.Checkout CheckoutService
+@inject Database Db
+@inject NavigationManager Nav
+
+<PageTitle>Shopping Cart — Favourite Books</PageTitle>
+
+@if (!Session.IsCustomer)
+{
+    <div class="auth-page">
+        <div class="auth-card">
+            <h2>Please login to view your cart</h2>
+            <a href="/login" class="btn btn-primary">Login</a>
+        </div>
+    </div>
+    return;
+}
+
+<h1>Shopping Cart</h1>
+
+@* ── Empty cart ───────────────────────────────────────────────────── *@
+@if (Session.Cart.IsEmpty && placedInvoice == null)
+{
+    <div class="empty-state">
+        <p>Your cart is empty.</p>
+        <a href="/catalogue" class="btn btn-primary">Browse Catalogue</a>
+    </div>
+    return;
+}
+
+@* ── Order confirmation ───────────────────────────────────────────── *@
+@if (placedInvoice != null)
+{
+    <div class="invoice-card">
+        <div class="msg-success">✓ Order placed and payment confirmed!</div>
+
+        <h2>Invoice #@placedInvoice.InvoiceId</h2>
+        <p><strong>Order #:</strong> @placedInvoice.Order.OrderId</p>
+        <p><strong>Date:</strong> @placedInvoice.IssuedDate.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Deliver to:</strong> @placedInvoice.Order.DeliveryAddress</p>
+
+        <table class="order-table">
+            <thead>
+                <tr><th>Title</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var line in placedInvoice.Order.Lines)
+                {
+                    <tr>
+                        <td>@line.Book.Title</td>
+                        <td>@line.Quantity</td>
+                        <td>$@line.UnitPriceAtPurchase.ToString("F2")</td>
+                        <td>$@line.LineTotal.ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr><td colspan="3"><strong>Total</strong></td><td><strong>$@placedInvoice.AmountDue.ToString("F2")</strong></td></tr>
+            </tfoot>
+        </table>
+
+        <p class="payment-status paid">Payment status: PAID (@paymentMethod)</p>
+
+        <div class="invoice-actions">
+            <a href="/orders" class="btn btn-secondary">View Order History</a>
+            <a href="/catalogue" class="btn btn-primary">Continue Shopping</a>
+        </div>
+    </div>
+    return;
+}
+
+@* ── Cart contents ────────────────────────────────────────────────── *@
+<div class="cart-layout">
+    <div class="cart-items">
+        <table class="order-table">
+            <thead>
+                <tr><th>Book</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Session.Cart.Items)
+                {
+                    <tr>
+                        <td>
+                            <strong>@item.Book.Title</strong><br/>
+                            <small>@item.Book.Author</small>
+                        </td>
+                        <td>$@item.Book.Price.ToString("F2")</td>
+                        <td>
+                            <input type="number" class="input qty-input"
+                                   min="1" max="@item.Book.StockQuantity"
+                                   value="@item.Quantity"
+                                   @onchange="e => UpdateQty(item.Book.ISBN, e.Value?.ToString())" />
+                        </td>
+                        <td>$@item.LineTotal.ToString("F2")</td>
+                        <td>
+                            <button class="btn-remove" @onclick="() => RemoveItem(item.Book.ISBN)">✕</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!string.IsNullOrEmpty(cartMessage))
+        {
+            <p class="@(cartSuccess ? "msg-success" : "msg-error")">@cartMessage</p>
+        }
+    </div>
+
+    @* ── Order summary + checkout ─────────────────────────────────── *@
+    <div class="cart-summary">
+        <h2>Order Summary</h2>
+        <div class="summary-row">
+            <span>Items (@Session.Cart.Items.Count)</span>
+            <span>$@Session.Cart.CalculateTotal().ToString("F2")</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total</span>
+            <span>$@Session.Cart.CalculateTotal().ToString("F2")</span>
+        </div>
+
+        <div class="form-group">
+            <label>Delivery Address</label>
+            <input class="input" @bind="deliveryAddress"
+                   placeholder="Enter delivery address" />
+        </div>
+
+        <div class="form-group">
+            <label>Payment Method</label>
+            <select class="input" @bind="paymentMethod">
+                <option value="Credit/Debit Card">Credit / Debit Card</option>
+                <option value="PayPal">PayPal</option>
+            </select>
+        </div>
+
+        @if (!string.IsNullOrEmpty(checkoutError))
+        {
+            <p class="msg-error">@checkoutError</p>
+        }
+
+        <button class="btn btn-primary btn-full" @onclick="PlaceOrder">
+            Place Order
+        </button>
+    </div>
+</div>
+
+@code {
+    private string deliveryAddress = "";
+    private string paymentMethod = "Credit/Debit Card";
+    private string cartMessage = "";
+    private bool cartSuccess = false;
+    private string checkoutError = "";
+    private Invoice? placedInvoice;
+
+    protected override void OnInitialized()
+    {
+        deliveryAddress = Session.DeliveryAddress ?? "";
+    }
+
+    private void UpdateQty(string isbn, string? value)
+    {
+        cartMessage = "";
+        if (!int.TryParse(value, out int qty) || qty <= 0)
+        {
+            cartSuccess = false;
+            cartMessage = "Invalid quantity.";
+            return;
+        }
+        bool ok = Session.Cart.UpdateQuantity(isbn, qty);
+        cartSuccess = ok;
+        cartMessage = ok ? "Quantity updated." : "Could not update — check stock availability.";
+        Session.NotifyStateChanged();
+    }
+
+    private void RemoveItem(string isbn)
+    {
+        Session.Cart.RemoveItem(isbn);
+        cartMessage = "Item removed.";
+        cartSuccess = true;
+        Session.NotifyStateChanged();
+    }
+
+    private void PlaceOrder()
+    {
+        checkoutError = "";
+
+        if (string.IsNullOrWhiteSpace(deliveryAddress))
+        {
+            checkoutError = "Please enter a delivery address.";
+            return;
+        }
+
+        Session.UpdateDeliveryAddress(deliveryAddress);
+
+        Invoice? invoice = CheckoutService.ProcessCheckout(
+            Session.Cart, Session.Email!, deliveryAddress);
+
+        if (invoice == null)
+        {
+            checkoutError = "Checkout failed — one or more items may be out of stock.";
+            return;
+        }
+
+        // Payment stub
+        CheckoutService.ProcessPaymentStub(invoice.Order, invoice);
+        placedInvoice = invoice;
+        Session.NotifyStateChanged();
+    }
+}

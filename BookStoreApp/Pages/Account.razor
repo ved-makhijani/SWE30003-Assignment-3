@@ -1,0 +1,73 @@
+@page "/account"
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>My Account — Favourite Books</PageTitle>
+
+@if (!Session.IsCustomer)
+{
+    Nav.NavigateTo("/login");
+    return;
+}
+
+<h1>My Account</h1>
+
+<div class="account-card">
+    <div class="form-group">
+        <label>Full Name</label>
+        <p class="detail-value">@Session.Name</p>
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <p class="detail-value">@Session.Email</p>
+    </div>
+
+    <div class="form-group">
+        <label>Delivery Address</label>
+        @if (editingAddress)
+        {
+            <input class="input" @bind="newAddress" placeholder="Enter new delivery address" />
+            <div class="btn-row">
+                <button class="btn btn-primary" @onclick="SaveAddress">Save</button>
+                <button class="btn btn-outline" @onclick="() => editingAddress = false">Cancel</button>
+            </div>
+            @if (!string.IsNullOrEmpty(addressMessage))
+            {
+                <p class="msg-success">@addressMessage</p>
+            }
+        }
+        else
+        {
+            <p class="detail-value">
+                @(string.IsNullOrWhiteSpace(Session.DeliveryAddress) ? "(not set)" : Session.DeliveryAddress)
+            </p>
+            <button class="btn btn-outline" @onclick="StartEdit">Edit Address</button>
+        }
+    </div>
+</div>
+
+@code {
+    private bool editingAddress = false;
+    private string newAddress = "";
+    private string addressMessage = "";
+
+    private void StartEdit()
+    {
+        newAddress = Session.DeliveryAddress ?? "";
+        editingAddress = true;
+        addressMessage = "";
+    }
+
+    private void SaveAddress()
+    {
+        if (string.IsNullOrWhiteSpace(newAddress))
+        {
+            addressMessage = "Address cannot be empty.";
+            return;
+        }
+        Session.UpdateDeliveryAddress(newAddress);
+        addressMessage = "Address updated.";
+        editingAddress = false;
+    }
+}

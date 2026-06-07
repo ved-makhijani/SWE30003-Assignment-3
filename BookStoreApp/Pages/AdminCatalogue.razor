@@ -1,0 +1,327 @@
+@page "/admin"
+@inject BookstoreApp.Models.Catalogue CatalogueService
+@inject Database Db
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Admin — Manage Catalogue</PageTitle>
+
+@if (!Session.IsAdmin)
+{
+    Nav.NavigateTo("/login");
+    return;
+}
+
+<h1>Manage Catalogue</h1>
+
+@* ── Tab navigation ───────────────────────────────────────────────── *@
+<div class="tab-bar">
+    <button class="tab @(activeTab == "view" ? "active" : "")" @onclick='() => SetTab("view")'>View All Books</button>
+    <button class="tab @(activeTab == "add" ? "active" : "")"  @onclick='() => SetTab("add")'>Add Book</button>
+    <button class="tab @(activeTab == "edit" ? "active" : "")" @onclick='() => SetTab("edit")'>Edit Book</button>
+    <button class="tab @(activeTab == "disable" ? "active" : "")" @onclick='() => SetTab("disable")'>Disable Book</button>
+    <button class="tab @(activeTab == "orders" ? "active" : "")" @onclick='() => SetTab("orders")'>All Orders</button>
+    <a href="/salesreport" class="tab">Sales Report</a>
+</div>
+
+@* ── VIEW ALL BOOKS ───────────────────────────────────────────────── *@
+@if (activeTab == "view")
+{
+    <div class="section">
+        <h2>All Books (@CatalogueService.Count total)</h2>
+        <table class="order-table">
+            <thead>
+                <tr><th>ISBN</th><th>Title</th><th>Author</th><th>Genre</th><th>Price</th><th>Stock</th><th>Available</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var book in CatalogueService.ListAllBooks())
+                {
+                    <tr class="@(book.IsAvailable ? "" : "row-disabled")">
+                        <td>@book.ISBN</td>
+                        <td>@book.Title</td>
+                        <td>@book.Author</td>
+                        <td>@book.Genre</td>
+                        <td>$@book.Price.ToString("F2")</td>
+                        <td>@book.StockQuantity</td>
+                        <td>@(book.IsAvailable ? "✓" : "Disabled")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* ── ADD BOOK ─────────────────────────────────────────────────────── *@
+@if (activeTab == "add")
+{
+    <div class="section form-card">
+        <h2>Add New Book</h2>
+
+        @if (!string.IsNullOrEmpty(addMessage))
+        {
+            <div class="@(addSuccess ? "msg-success" : "msg-error")">@addMessage</div>
+        }
+
+        <div class="form-group">
+            <label>ISBN</label>
+            <input class="input" @bind="addIsbn" placeholder="978-0-0000-0000-0" />
+        </div>
+        <div class="form-group">
+            <label>Title</label>
+            <input class="input" @bind="addTitle" placeholder="Book title" />
+        </div>
+        <div class="form-group">
+            <label>Author</label>
+            <input class="input" @bind="addAuthor" placeholder="Author name" />
+        </div>
+        <div class="form-group">
+            <label>Genre</label>
+            <input class="input" @bind="addGenre" placeholder="e.g. Fiction, Non-Fiction" />
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea class="input" rows="3" @bind="addDesc" placeholder="Short description"></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Price ($)</label>
+                <input class="input" type="number" step="0.01" min="0" @bind="addPrice" />
+            </div>
+            <div class="form-group">
+                <label>Stock</label>
+                <input class="input" type="number" min="0" @bind="addStock" />
+            </div>
+        </div>
+
+        <button class="btn btn-primary" @onclick="DoAddBook">Add Book</button>
+    </div>
+}
+
+@* ── EDIT BOOK ────────────────────────────────────────────────────── *@
+@if (activeTab == "edit")
+{
+    <div class="section form-card">
+        <h2>Edit Book</h2>
+
+        <div class="form-group">
+            <label>ISBN to edit</label>
+            <div class="input-row">
+                <input class="input" @bind="editIsbn" placeholder="Enter ISBN" />
+                <button class="btn btn-outline" @onclick="LoadBookForEdit">Load</button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(editMessage))
+        {
+            <div class="@(editSuccess ? "msg-success" : "msg-error")">@editMessage</div>
+        }
+
+        @if (editingBook != null)
+        {
+            <div class="form-group">
+                <label>Title</label>
+                <input class="input" @bind="editTitle" />
+            </div>
+            <div class="form-group">
+                <label>Author</label>
+                <input class="input" @bind="editAuthor" />
+            </div>
+            <div class="form-group">
+                <label>Genre</label>
+                <input class="input" @bind="editGenre" />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea class="input" rows="3" @bind="editDesc"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Price ($)</label>
+                    <input class="input" type="number" step="0.01" min="0" @bind="editPrice" />
+                </div>
+                <div class="form-group">
+                    <label>Stock</label>
+                    <input class="input" type="number" min="0" @bind="editStock" />
+                </div>
+            </div>
+            <button class="btn btn-primary" @onclick="DoEditBook">Save Changes</button>
+        }
+    </div>
+}
+
+@* ── DISABLE BOOK ─────────────────────────────────────────────────── *@
+@if (activeTab == "disable")
+{
+    <div class="section form-card">
+        <h2>Disable Book</h2>
+        <p class="hint">Disabled books are hidden from customers but kept in order history.</p>
+
+        @if (!string.IsNullOrEmpty(disableMessage))
+        {
+            <div class="@(disableSuccess ? "msg-success" : "msg-error")">@disableMessage</div>
+        }
+
+        <div class="form-group">
+            <label>ISBN to disable</label>
+            <div class="input-row">
+                <input class="input" @bind="disableIsbn" placeholder="Enter ISBN" />
+                <button class="btn btn-danger" @onclick="DoDisableBook">Disable</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* ── ALL ORDERS ───────────────────────────────────────────────────── *@
+@if (activeTab == "orders")
+{
+    <div class="section">
+        <h2>All Orders</h2>
+        @{
+            var allOrders = Db.GetAllOrders();
+        }
+        @if (allOrders.Count == 0)
+        {
+            <p>No orders in the system yet.</p>
+        }
+        else
+        {
+            @foreach (var order in allOrders.OrderByDescending(o => o.OrderDate))
+            {
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div>
+                            <strong>Order #@order.OrderId</strong> — @order.CustomerEmail
+                            <span class="tag tag-@order.Status.ToString().ToLower()">@order.Status</span>
+                        </div>
+                        <div class="order-card-date">@order.OrderDate.ToString("dd MMM yyyy, HH:mm")</div>
+                    </div>
+                    <p class="order-card-address">📦 @order.DeliveryAddress</p>
+                    <table class="order-table">
+                        <thead><tr><th>Title</th><th>Qty</th><th>Total</th></tr></thead>
+                        <tbody>
+                            @foreach (var line in order.Lines)
+                            {
+                                <tr>
+                                    <td>@line.Book.Title</td>
+                                    <td>@line.Quantity</td>
+                                    <td>$@line.LineTotal.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr><td colspan="2"><strong>Total</strong></td><td><strong>$@order.CalculateTotal().ToString("F2")</strong></td></tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+}
+
+@code {
+    private string activeTab = "view";
+
+    // Add book fields
+    private string addIsbn = "", addTitle = "", addAuthor = "", addGenre = "", addDesc = "";
+    private decimal addPrice = 0;
+    private int addStock = 0;
+    private string addMessage = "";
+    private bool addSuccess = false;
+
+    // Edit book fields
+    private string editIsbn = "";
+    private Book? editingBook;
+    private string editTitle = "", editAuthor = "", editGenre = "", editDesc = "";
+    private decimal editPrice = 0;
+    private int editStock = 0;
+    private string editMessage = "";
+    private bool editSuccess = false;
+
+    // Disable book fields
+    private string disableIsbn = "";
+    private string disableMessage = "";
+    private bool disableSuccess = false;
+
+    private void SetTab(string tab) => activeTab = tab;
+
+    private void DoAddBook()
+    {
+        addMessage = "";
+        if (string.IsNullOrWhiteSpace(addIsbn) || string.IsNullOrWhiteSpace(addTitle) ||
+            string.IsNullOrWhiteSpace(addAuthor))
+        {
+            addMessage = "ISBN, Title, and Author are required.";
+            addSuccess = false;
+            return;
+        }
+
+        if (CatalogueService.ISBNExists(addIsbn))
+        {
+            addMessage = "A book with this ISBN already exists.";
+            addSuccess = false;
+            return;
+        }
+
+        var book = new Book(addIsbn, addTitle, addAuthor, addGenre, addDesc, addPrice, addStock);
+        CatalogueService.AddBook(book);
+        Db.SaveBook(book);
+
+        addMessage = $"'{addTitle}' added to catalogue.";
+        addSuccess = true;
+        addIsbn = addTitle = addAuthor = addGenre = addDesc = "";
+        addPrice = 0; addStock = 0;
+    }
+
+    private void LoadBookForEdit()
+    {
+        editMessage = "";
+        editingBook = CatalogueService.FindByISBN(editIsbn);
+        if (editingBook == null)
+        {
+            editMessage = "Book not found.";
+            editSuccess = false;
+            return;
+        }
+        editTitle = editingBook.Title;
+        editAuthor = editingBook.Author;
+        editGenre = editingBook.Genre;
+        editDesc = editingBook.Description;
+        editPrice = editingBook.Price;
+        editStock = editingBook.StockQuantity;
+    }
+
+    private void DoEditBook()
+    {
+        if (editingBook == null) return;
+        editMessage = "";
+
+        if (string.IsNullOrWhiteSpace(editTitle) || string.IsNullOrWhiteSpace(editAuthor))
+        {
+            editMessage = "Title and Author cannot be empty.";
+            editSuccess = false;
+            return;
+        }
+
+        editingBook.UpdateDetails(editTitle, editAuthor, editGenre, editDesc, editPrice);
+        editingBook.UpdateStock(editStock);
+        editMessage = "Book updated successfully.";
+        editSuccess = true;
+    }
+
+    private void DoDisableBook()
+    {
+        disableMessage = "";
+        if (Db.IsBookInActiveOrders(disableIsbn))
+        {
+            disableMessage = "Cannot disable — this book is part of active orders. It will be marked unavailable instead.";
+            CatalogueService.DisableBook(disableIsbn);
+            disableSuccess = true;
+            return;
+        }
+
+        bool ok = CatalogueService.DisableBook(disableIsbn);
+        disableMessage = ok ? "Book disabled and hidden from catalogue." : "Book not found.";
+        disableSuccess = ok;
+        disableIsbn = "";
+    }
+}

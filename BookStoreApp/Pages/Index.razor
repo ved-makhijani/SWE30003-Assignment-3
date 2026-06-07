@@ -1,0 +1,30 @@
+@page "/"
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Favourite Books</PageTitle>
+
+<div class="hero">
+    <h1>Welcome to Favourite Books</h1>
+    <p class="hero-sub">Hawthorn's favourite bookstore — now online.</p>
+
+    @if (Session.IsLoggedIn)
+    {
+        <p class="hero-welcome">Hello, <strong>@Session.Name</strong>! What are you looking for today?</p>
+        <div class="hero-actions">
+            <a href="/catalogue" class="btn btn-primary">Browse Catalogue</a>
+            @if (Session.IsCustomer)
+            {
+                <a href="/cart" class="btn btn-secondary">My Cart (@Session.Cart.Items.Count)</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="hero-actions">
+            <a href="/catalogue" class="btn btn-primary">Browse Catalogue</a>
+            <a href="/login" class="btn btn-secondary">Login</a>
+            <a href="/register" class="btn btn-outline">Register</a>
+        </div>
+    }
+</div>

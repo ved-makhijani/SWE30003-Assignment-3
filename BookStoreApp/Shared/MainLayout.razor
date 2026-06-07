@@ -1,0 +1,67 @@
+@inherits LayoutComponentBase
+@inject SessionService Session
+@inject NavigationManager Nav
+@implements IDisposable
+
+<div class="layout">
+    <nav class="navbar">
+        <a class="navbar-brand" href="/">📚 Favourite Books</a>
+
+        <div class="navbar-links">
+            <a href="/catalogue">Catalogue</a>
+
+            @if (Session.IsLoggedIn)
+            {
+                @if (Session.IsCustomer)
+                {
+                    <a href="/cart">
+                        Cart
+                        @if (Session.Cart.Items.Count > 0)
+                        {
+                            <span class="badge">@Session.Cart.Items.Count</span>
+                        }
+                    </a>
+                    <a href="/orders">My Orders</a>
+                    <a href="/account">@Session.Name</a>
+                }
+                @if (Session.IsAdmin)
+                {
+                    <a href="/admin">Admin</a>
+                    <a href="/salesreport">Sales Report</a>
+                }
+                <button class="btn-link" @onclick="Logout">Logout</button>
+            }
+            else
+            {
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            }
+        </div>
+    </nav>
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <footer class="footer">
+        <p>Favourite Books — Hawthorn, VIC &copy; 2026</p>
+    </footer>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Session.OnChange += StateHasChanged;
+    }
+
+    private void Logout()
+    {
+        Session.Logout();
+        Nav.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        Session.OnChange -= StateHasChanged;
+    }
+}

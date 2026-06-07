@@ -1,0 +1,22 @@
+@using Microsoft.AspNetCore.Components.Web
+@namespace BookstoreApp.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Favourite Books</title>
+    <link rel="stylesheet" href="~/css/app.css" />
+    <link rel="stylesheet" href="~/BookstoreApp.styles.css" asp-append-version="true" />
+</head>
+<body>
+    @RenderBody()
+    <div id="blazor-error-ui">
+        An error has occurred. <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

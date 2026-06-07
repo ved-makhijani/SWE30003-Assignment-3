@@ -1,0 +1,13 @@
+@using BookstoreApp
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(BookstoreApp.Shared.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(BookstoreApp.Shared.MainLayout)">
+            <p>Sorry, this page doesn't exist.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

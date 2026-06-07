@@ -1,0 +1,95 @@
+@page "/register"
+@inject Database Db
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Register — Favourite Books</PageTitle>
+
+<div class="auth-page">
+    <div class="auth-card">
+        <h1>Create Account</h1>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="msg-error">@errorMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="msg-success">@successMessage</div>
+        }
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <input class="input" @bind="fullName" placeholder="Your full name" />
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input class="input" type="email" @bind="email" placeholder="you@example.com" />
+        </div>
+
+        <div class="form-group">
+            <label>Password <span class="hint">(min 8 characters)</span></label>
+            <input class="input" type="password" @bind="password" placeholder="Choose a password" />
+        </div>
+
+        <div class="form-group">
+            <label>Delivery Address <span class="hint">(optional)</span></label>
+            <input class="input" @bind="address" placeholder="123 Main St, Melbourne VIC" />
+        </div>
+
+        <button class="btn btn-primary btn-full" @onclick="DoRegister">Create Account</button>
+
+        <p class="auth-link">Already have an account? <a href="/login">Login here</a></p>
+    </div>
+</div>
+
+@code {
+    private string fullName = "";
+    private string email = "";
+    private string password = "";
+    private string address = "";
+    private string errorMessage = "";
+    private string successMessage = "";
+
+    private void DoRegister()
+    {
+        errorMessage = "";
+        successMessage = "";
+
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            errorMessage = "Full name cannot be empty.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        {
+            errorMessage = "Please enter a valid email address.";
+            return;
+        }
+
+        if (Db.EmailExists(email))
+        {
+            errorMessage = "An account with this email already exists. Please login.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+        {
+            errorMessage = "Password must be at least 8 characters.";
+            return;
+        }
+
+        bool saved = Db.SaveUser(email, password, "Customer", fullName, address);
+        if (!saved)
+        {
+            errorMessage = "Registration failed. Please try again.";
+            return;
+        }
+
+        Session.Login(email.ToLower(), fullName, "Customer", address);
+        Session.NotifyStateChanged();
+        Nav.NavigateTo("/catalogue");
+    }
+}

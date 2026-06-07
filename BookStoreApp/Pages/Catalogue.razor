@@ -1,0 +1,184 @@
+@page "/catalogue"
+@inject BookstoreApp.Models.Catalogue CatalogueService
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Catalogue — Favourite Books</PageTitle>
+
+<h1>Browse Catalogue</h1>
+
+@* ── Search and filter bar ──────────────────────────────────────── *@
+<div class="filter-bar">
+    <input class="input"
+           placeholder="Search by title, author or genre..."
+           @bind="keyword"
+           @bind:event="oninput"
+           @onkeyup="ApplyFilters" />
+
+    <input class="input"
+           placeholder="Filter by genre"
+           @bind="genreFilter"
+           @bind:event="oninput"
+           @onkeyup="ApplyFilters" />
+
+    <input class="input"
+           placeholder="Filter by author"
+           @bind="authorFilter"
+           @bind:event="oninput"
+           @onkeyup="ApplyFilters" />
+
+    <div class="filter-price">
+        <label>Max price: <strong>$@maxPrice</strong></label>
+        <input type="range" min="0" max="200" step="1"
+               @bind="maxPrice"
+               @bind:event="oninput"
+               @onchange="ApplyFilters" />
+    </div>
+
+    <button class="btn btn-outline" @onclick="ClearFilters">Clear</button>
+</div>
+
+@* ── Results ─────────────────────────────────────────────────────── *@
+<p class="result-count">@filteredBooks.Count book(s) found</p>
+
+@if (filteredBooks.Count == 0)
+{
+    <div class="empty-state">
+        <p>No books match your search. Try different keywords or clear the filters.</p>
+    </div>
+}
+else if (selectedBook == null)
+{
+    <div class="book-grid">
+        @foreach (var book in filteredBooks)
+        {
+            <div class="book-card" @onclick="() => SelectBook(book)">
+                <div class="book-card-genre">@book.Genre</div>
+                <h3 class="book-card-title">@book.Title</h3>
+                <p class="book-card-author">@book.Author</p>
+                <div class="book-card-footer">
+                    <span class="book-card-price">$@book.Price.ToString("F2")</span>
+                    <span class="book-card-stock @(book.StockQuantity > 0 ? "in-stock" : "out-stock")">
+                        @(book.StockQuantity > 0 ? $"{book.StockQuantity} in stock" : "Out of stock")
+                    </span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* ── Book detail panel ───────────────────────────────────────────── *@
+@if (selectedBook != null)
+{
+    <div class="book-detail">
+        <button class="btn btn-outline" @onclick="() => selectedBook = null">← Back to results</button>
+
+        <div class="book-detail-body">
+            <div class="book-detail-info">
+                <span class="tag">@selectedBook.Genre</span>
+                <h2>@selectedBook.Title</h2>
+                <p class="book-detail-author">by @selectedBook.Author</p>
+                <p class="book-detail-isbn">ISBN: @selectedBook.ISBN</p>
+                <p class="book-detail-price">$@selectedBook.Price.ToString("F2")</p>
+                <p class="book-detail-stock @(selectedBook.StockQuantity > 0 ? "in-stock" : "out-stock")">
+                    @(selectedBook.StockQuantity > 0 ? $"{selectedBook.StockQuantity} copies in stock" : "Currently out of stock")
+                </p>
+                <p class="book-detail-desc">@selectedBook.Description</p>
+
+                @if (Session.IsCustomer && selectedBook.IsAvailable)
+                {
+                    <div class="add-to-cart-row">
+                        <label>Qty:</label>
+                        <input type="number" class="input qty-input" min="1"
+                               max="@selectedBook.StockQuantity"
+                               @bind="addQty" />
+                        <button class="btn btn-primary" @onclick="AddToCart">Add to Cart</button>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(cartMessage))
+                    {
+                        <p class="@(cartSuccess ? "msg-success" : "msg-error")">@cartMessage</p>
+                    }
+                }
+                else if (!Session.IsLoggedIn)
+                {
+                    <p><a href="/login">Login</a> to add books to your cart.</p>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Book> allBooks = new();
+    private List<Book> filteredBooks = new();
+    private Book? selectedBook;
+
+    private string keyword = "";
+    private string genreFilter = "";
+    private string authorFilter = "";
+    private decimal maxPrice = 200;
+
+    private int addQty = 1;
+    private string cartMessage = "";
+    private bool cartSuccess = false;
+
+    protected override void OnInitialized()
+    {
+        allBooks = CatalogueService.ListAvailableBooks();
+        filteredBooks = allBooks;
+    }
+
+    private void ApplyFilters()
+    {
+        filteredBooks = allBooks;
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+            filteredBooks = CatalogueService.SearchBooks(keyword);
+
+        if (!string.IsNullOrWhiteSpace(genreFilter))
+            filteredBooks = filteredBooks
+                .Where(b => b.Genre.Contains(genreFilter, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        if (!string.IsNullOrWhiteSpace(authorFilter))
+            filteredBooks = filteredBooks
+                .Where(b => b.Author.Contains(authorFilter, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        filteredBooks = filteredBooks.Where(b => b.Price <= maxPrice).ToList();
+    }
+
+    private void ClearFilters()
+    {
+        keyword = "";
+        genreFilter = "";
+        authorFilter = "";
+        maxPrice = 200;
+        filteredBooks = allBooks;
+    }
+
+    private void SelectBook(Book book)
+    {
+        selectedBook = book;
+        addQty = 1;
+        cartMessage = "";
+    }
+
+    private void AddToCart()
+    {
+        if (selectedBook == null) return;
+        bool added = Session.Cart.AddItem(selectedBook, addQty);
+        if (added)
+        {
+            cartSuccess = true;
+            cartMessage = $"'{selectedBook.Title}' (x{addQty}) added to cart.";
+            Session.NotifyStateChanged();
+        }
+        else
+        {
+            cartSuccess = false;
+            cartMessage = "Could not add — insufficient stock.";
+        }
+    }
+}

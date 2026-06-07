@@ -1,0 +1,100 @@
+@page "/salesreport"
+@inject SessionService Session
+@inject Database Db
+@inject NavigationManager Nav
+
+<PageTitle>Sales Report — Favourite Books</PageTitle>
+
+@if (!Session.IsAdmin)
+{
+    Nav.NavigateTo("/login");
+    return;
+}
+
+<h1>Sales Report</h1>
+
+@{
+    var allOrders = Db.GetAllOrders();
+    var allInvoices = Db.GetAllInvoices();
+    decimal totalRevenue = allInvoices.Where(i => i.IsSettled).Sum(i => i.AmountDue);
+    int totalOrders = allOrders.Count;
+    int paidOrders = allOrders.Count(o => o.Status != BookstoreApp.Models.OrderStatus.PendingPayment &&
+                                          o.Status != BookstoreApp.Models.OrderStatus.Cancelled);
+}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">$@totalRevenue.ToString("F2")</div>
+        <div class="stat-label">Total Revenue</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@totalOrders</div>
+        <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@paidOrders</div>
+        <div class="stat-label">Paid Orders</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">
+            @(totalOrders > 0 ? $"${(totalRevenue / totalOrders).ToString("F2")}" : "$0.00")
+        </div>
+        <div class="stat-label">Avg. Order Value</div>
+    </div>
+</div>
+
+@if (allOrders.Count > 0)
+{
+    <h2>Order Breakdown</h2>
+    <table class="order-table">
+        <thead>
+            <tr><th>Order #</th><th>Customer</th><th>Date</th><th>Status</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var order in allOrders.OrderByDescending(o => o.OrderDate))
+            {
+                <tr>
+                    <td>@order.OrderId</td>
+                    <td>@order.CustomerEmail</td>
+                    <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td><span class="tag tag-@order.Status.ToString().ToLower()">@order.Status</span></td>
+                    <td>$@order.CalculateTotal().ToString("F2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="report-actions">
+        <button class="btn btn-outline" @onclick="ExportReport">Export Report (TXT)</button>
+        @if (!string.IsNullOrEmpty(exportMessage))
+        {
+            <span class="msg-success">@exportMessage</span>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <p>No orders in the system yet.</p>
+    </div>
+}
+
+@code {
+    private string exportMessage = "";
+
+    private void ExportReport()
+    {
+        var allOrders = Db.GetAllOrders();
+        var allInvoices = Db.GetAllInvoices();
+        decimal totalRevenue = allInvoices.Where(i => i.IsSettled).Sum(i => i.AmountDue);
+
+        string report =
+            $"Favourite Books — Sales Report\n" +
+            $"Generated: {DateTime.Now:dd/MM/yyyy HH:mm}\n" +
+            $"Revenue   : ${totalRevenue:F2}\n" +
+            $"Orders    : {allOrders.Count}";
+
+        File.WriteAllText("SalesReport.txt", report);
+        exportMessage = "Report exported to SalesReport.txt";
+    }
+}

@@ -1,0 +1,70 @@
+@page "/orders"
+@inject SessionService Session
+@inject Database Db
+
+<PageTitle>My Orders — Favourite Books</PageTitle>
+
+@if (!Session.IsCustomer)
+{
+    <div class="auth-page">
+        <div class="auth-card">
+            <h2>Please login to view your orders</h2>
+            <a href="/login" class="btn btn-primary">Login</a>
+        </div>
+    </div>
+    return;
+}
+
+<h1>My Orders</h1>
+
+@{
+    var orders = Db.GetOrdersByCustomer(Session.Email!);
+}
+
+@if (orders.Count == 0)
+{
+    <div class="empty-state">
+        <p>You haven't placed any orders yet.</p>
+        <a href="/catalogue" class="btn btn-primary">Start Shopping</a>
+    </div>
+}
+else
+{
+    @foreach (var order in orders.OrderByDescending(o => o.OrderDate))
+    {
+        <div class="order-card">
+            <div class="order-card-header">
+                <div>
+                    <strong>Order #@order.OrderId</strong>
+                    <span class="tag tag-@order.Status.ToString().ToLower()">@order.Status</span>
+                </div>
+                <div class="order-card-date">@order.OrderDate.ToString("dd MMM yyyy, HH:mm")</div>
+            </div>
+
+            <p class="order-card-address">📦 Deliver to: @order.DeliveryAddress</p>
+
+            <table class="order-table">
+                <thead>
+                    <tr><th>Title</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in order.Lines)
+                    {
+                        <tr>
+                            <td>@line.Book.Title</td>
+                            <td>@line.Quantity</td>
+                            <td>$@line.UnitPriceAtPurchase.ToString("F2")</td>
+                            <td>$@line.LineTotal.ToString("F2")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3"><strong>Order Total</strong></td>
+                        <td><strong>$@order.CalculateTotal().ToString("F2")</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+}

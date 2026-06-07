@@ -3,7 +3,7 @@ build_property.TargetFramework = net10.0
 build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
 build_property.TargetPlatformMinVersion = 
-build_property.UsingMicrosoftNETSdkWeb = 
+build_property.UsingMicrosoftNETSdkWeb = true
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
@@ -11,8 +11,70 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = BookstoreApp
+build_property.RootNamespace = BookstoreApp
 build_property.ProjectDir = /Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 10.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp
+build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Account.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWNjb3VudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/AdminCatalogue.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWRtaW5DYXRhbG9ndWUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Cart.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ2FydC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Catalogue.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ2F0YWxvZ3VlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvT3JkZXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUmVnaXN0ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/SalesReport.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2FsZXNSZXBvcnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkL01haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/_Host.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvX0hvc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/ved/Library/CloudStorage/OneDrive-SwinburneUniversity/Sem_5/Software Architectures and Design/Assignment_3/SWE30003-Assignment-3/BookStoreApp/Pages/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvX0xheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
