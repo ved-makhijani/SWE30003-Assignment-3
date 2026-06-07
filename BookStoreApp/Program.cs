@@ -150,7 +150,8 @@ while (running)
         Console.WriteLine($"  ║  1. Browse catalogue                 ║");
         Console.WriteLine($"  ║  2. Manage catalogue  [Lakshit]      ║");
         Console.WriteLine($"  ║  3. View all orders                  ║");
-        Console.WriteLine($"  ║  4. Logout                           ║");
+        Console.WriteLine($"  ║  4. Sales Report                     ║");
+        Console.WriteLine($"  ║  5. Logout                           ║");
         Console.WriteLine($"  ║  0. Exit                             ║");
         Console.WriteLine($"  ╚══════════════════════════════════════╝");
         Console.Write("  Choose an option: ");
@@ -172,8 +173,12 @@ while (running)
             case "3":
                 ViewAllOrders(db);
                 break;
-
+    
             case "4":
+                new SalesReportUI(db).Show();
+                break;
+
+            case "5":
                 Console.WriteLine($"  Goodbye, {currentName}!");
                 currentEmail = currentName = currentRole = currentAddress = null;
                 break;
